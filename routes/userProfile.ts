@@ -58,17 +58,9 @@ export function getUserProfile () {
         if (!code) {
           throw new Error('Username is null')
         }
-        const singleQuoteRegex = /^'(?:[^'\\]|\\.)*'$/
-        const doubleQuoteRegex = /^"(?:[^"\\]|\\.)*"$/
-        const backtickRegex = /^`(?:[^`\\$]|\\.|\$(?!{))*`$/
-        const numericRegex = /^-?\d+(?:\.\d+)?$/
-        const booleanRegex = /^(?:true|false|null|undefined)$/
+        const numericRegex = /^[0-9+\-*/%().\s]+$/
 
-        const isSafe = singleQuoteRegex.test(code) ||
-          doubleQuoteRegex.test(code) ||
-          backtickRegex.test(code) ||
-          numericRegex.test(code) ||
-          booleanRegex.test(code)
+        const isSafe = numericRegex.test(code) && !code.includes('//') && !code.includes('/*')
 
         if (!isSafe) {
           throw new Error('Unsafe code execution blocked')
@@ -85,6 +77,7 @@ export function getUserProfile () {
     const theme = themes[themeKey] || themes['bluegrey-lightgreen']
 
     if (username) {
+      username = String(username).replace(/(?<!\\)#{/g, '\\#{').replace(/(?<!\\)!{/g, '\\!{')
       template = template.replace(/_username_/g, username)
     }
     template = template.replace(/_emailHash_/g, security.hash(user?.email))
